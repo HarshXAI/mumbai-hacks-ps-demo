@@ -1,4 +1,4 @@
-import React from 'react';
+//import React from 'react';
 import { Search, Globe, User, Moon, Sun } from 'lucide-react';
 import { useAppContext } from '../../contexts/AppContext';
 import { t } from '../../utils/translations';
@@ -20,24 +20,32 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center justify-between px-6 py-4">
-        {/* Logo */}
-        <div className="flex items-center space-x-4">
+        
+        {/* Logo - Now Clickable (Goes to Dashboard) */}
+        <button 
+          onClick={() => dispatch({ type: 'SET_CURRENT_PAGE', payload: 'dashboard' })}
+          className="flex items-center space-x-4 group"
+        >
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center shadow-md group-hover:shadow-lg transition-all">
               <span className="text-white font-bold text-sm">TL</span>
             </div>
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white">TruthLens</h1>
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              TruthLens
+            </h1>
           </div>
-        </div>
+        </button>
 
-        {/* Search Bar */}
-        <div className="flex-1 max-w-2xl mx-8">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        {/* Global Search Bar - Redirects to Agent */}
+        <div className="flex-1 max-w-2xl mx-8 hidden md:block">
+          <div className="relative group">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 group-hover:text-blue-500 transition-colors" />
             <input
               type="text"
               placeholder={t('searchPlaceholder', state.language)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onClick={() => dispatch({ type: 'SET_CURRENT_PAGE', payload: 'dashboard' })}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer hover:border-blue-400 dark:hover:border-blue-500"
+              readOnly // Prevents typing here, forces user to use the main Agent input
             />
           </div>
         </div>
@@ -57,10 +65,10 @@ export function Header() {
           <div className="relative group">
             <button className="flex items-center space-x-1 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <Globe className="w-5 h-5" />
-              <span className="text-sm font-medium">{state.language.toUpperCase()}</span>
+              <span className="text-sm font-medium uppercase">{state.language}</span>
             </button>
             
-            <div className="absolute right-0 top-full mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div className="absolute right-0 top-full mt-2 w-32 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
               {(['en', 'hi', 'mr'] as const).map((lang) => (
                 <button
                   key={lang}

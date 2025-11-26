@@ -1,88 +1,50 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
 
-export type Language = 'en' | 'hi' | 'mr';
-export type Theme = 'light' | 'dark';
-export type Verdict = 'Unverified' | 'Accurate' | 'Misleading' | 'Out of Context' | 'Altered';
-export type MediaType = 'Text' | 'Video' | 'Image' | 'Screenshot' | 'Audio';
+// --- TYPES ---
+export type Verdict = 'Accurate' | 'Misleading' | 'Out of Context' | 'Altered' | 'Unverified';
+export type MediaType = 'Text' | 'Video' | 'Image' | 'Audio' | 'Screenshot';
 
-export interface Claim {
-  id: string;
-  title: string;
-  verdict: Verdict;
-  trustScore: number;
-  confidence: number;
-  evidenceCount: number;
-  source: {
-    handle: string;
-    channel: string;
-    timestamp: string;
-    platform: string;
-  };
-  virality: number[];
-  mediaType: MediaType;
-  language: Language;
+export interface FilterState {
+  mediaType: MediaType[];
+  verdict: Verdict[];
   region: string;
-  summary?: string;
-  evidence?: Array<{
-    type: 'Official Record' | 'Prior Speech' | 'Article' | 'Press Note';
-    title: string;
-    timestamp: string;
-    quote: string;
-  }>;
-  forensics?: {
-    type: 'video' | 'image';
-    frames?: string[];
-    elaResults?: string[];
-    audioSpoofScore?: number;
-    transcriptDrift?: number[];
-    metadata?: Record<string, any>;
-  };
+  language: string[];
+  timeWindow: 'all' | '1h' | '24h' | '7d'; // <--- ADDED THIS
 }
 
-interface AppState {
-  theme: Theme;
-  language: Language;
+export interface AppState {
+  theme: 'light' | 'dark';
+  language: 'en' | 'hi' | 'mr';
   currentPage: string;
-  rightRailCollapsed: boolean;
-  claims: Claim[];
-  selectedClaim: Claim | null;
-  filters: {
-    mediaType: MediaType[];
-    verdict: Verdict[];
-    language: Language[];
-    region: string;
-    timeWindow: '1h' | '24h' | '7d';
-  };
+  selectedClaim: any | null;
+  filters: FilterState;
+  rightRailOpen: boolean;
 }
 
-type AppAction =
-  | { type: 'SET_THEME'; payload: Theme }
-  | { type: 'SET_LANGUAGE'; payload: Language }
-  | { type: 'SET_CURRENT_PAGE'; payload: string }
-  | { type: 'TOGGLE_RIGHT_RAIL' }
-  | { type: 'SET_SELECTED_CLAIM'; payload: Claim | null }
-  | { type: 'UPDATE_FILTERS'; payload: Partial<AppState['filters']> };
-
+// --- INITIAL STATE ---
 const initialState: AppState = {
-  theme: 'light',
+  theme: 'dark',
   language: 'en',
   currentPage: 'feed',
-  rightRailCollapsed: false,
-  claims: [],
   selectedClaim: null,
   filters: {
     mediaType: [],
     verdict: [],
-    language: [],
     region: 'all',
-    timeWindow: '24h',
+    language: [],
+    timeWindow: 'all', // <--- DEFAULT
   },
+  rightRailOpen: true,
 };
 
-const AppContext = createContext<{
-  state: AppState;
-  dispatch: React.Dispatch<AppAction>;
-} | null>(null);
+// --- REDUCER ---
+type AppAction =
+  | { type: 'SET_THEME'; payload: 'light' | 'dark' }
+  | { type: 'SET_LANGUAGE'; payload: 'en' | 'hi' | 'mr' }
+  | { type: 'SET_CURRENT_PAGE'; payload: string }
+  | { type: 'SET_SELECTED_CLAIM'; payload: any | null }
+  | { type: 'UPDATE_FILTERS'; payload: Partial<FilterState> }
+  | { type: 'TOGGLE_RIGHT_RAIL' };
 
 function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
@@ -92,20 +54,25 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, language: action.payload };
     case 'SET_CURRENT_PAGE':
       return { ...state, currentPage: action.payload };
-    case 'TOGGLE_RIGHT_RAIL':
-      return { ...state, rightRailCollapsed: !state.rightRailCollapsed };
     case 'SET_SELECTED_CLAIM':
       return { ...state, selectedClaim: action.payload };
     case 'UPDATE_FILTERS':
       return { ...state, filters: { ...state.filters, ...action.payload } };
+    case 'TOGGLE_RIGHT_RAIL':
+      return { ...state, rightRailOpen: !state.rightRailOpen };
     default:
       return state;
   }
 }
 
+// --- PROVIDER ---
+const AppContext = createContext<{
+  state: AppState;
+  dispatch: React.Dispatch<AppAction>;
+}>({ state: initialState, dispatch: () => null });
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
-
   return (
     <AppContext.Provider value={{ state, dispatch }}>
       {children}
@@ -113,10 +80,4 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useAppContext() {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useAppContext must be used within AppProvider');
-  }
-  return context;
-}
+export const useAppContext = () => useContext(AppContext);

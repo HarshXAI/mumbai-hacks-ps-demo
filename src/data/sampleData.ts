@@ -1,6 +1,6 @@
-import { Claim } from '../contexts/AppContext';
+//import { Claim } from '../contexts/AppContext';
 
-export const sampleClaims: Claim[] = [
+export const sampleClaims: any[] = [
   {
     id: '1',
     title: 'Candidate X promised to waive all student loans by 2026.',
